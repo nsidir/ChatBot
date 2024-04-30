@@ -1,19 +1,15 @@
 package com.example.demo;
 
-import javafx.application.Application;
-import javafx.geometry.Insets;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
+import de.kherud.llama.*;
+import javafx.application.*;
+import javafx.concurrent.*;
+import javafx.geometry.*;
+import javafx.scene.*;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.*;
 
 import java.io.*;
-
-import de.kherud.llama.InferenceParameters;
-import de.kherud.llama.LlamaModel;
-import de.kherud.llama.ModelParameters;
 
 public class MainApp extends Application {
 
@@ -42,12 +38,26 @@ public class MainApp extends Application {
         sendButton.setOnAction(event -> {
             String input = userInput.getText();
             chatDisplay.appendText("User: " + input + "\n");
-            try {
-                String response = generateResponse(input);
-                chatDisplay.appendText("Llama: " + response + "\n");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
+            // Create a Task to generate response asynchronously
+            Task<String> responseTask = new Task<>() {
+                @Override
+                protected String call() throws Exception {
+                    return generateResponse(input);
+                }
+            };
+
+            // Update UI when the response task completes
+            responseTask.setOnSucceeded(e -> {
+                try {
+                    chatDisplay.appendText("Llama: " + responseTask.get() + "\n");
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
+
+            // Start the task
+            new Thread(responseTask).start();
         });
 
         // Layout setup
@@ -75,9 +85,9 @@ public class MainApp extends Application {
                 .setMirostat(InferenceParameters.MiroStat.V2)
                 .setAntiPrompt("User:");
 
-        String response = "";
+        StringBuilder response = new StringBuilder();
         for (LlamaModel.Output output : model.generate(input, inferParams)) {
-            response += output;
+            response.append(output);
             try {
                 writer.write(String.valueOf(output));
             } catch (IOException e) {
@@ -85,7 +95,7 @@ public class MainApp extends Application {
             }
         }
         writer.flush();
-        return response;
+        return response.toString();
     }
 
     @Override
