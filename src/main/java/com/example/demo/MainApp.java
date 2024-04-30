@@ -23,11 +23,11 @@ public class MainApp extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         // Set up chatbot model and writer
-        String modelPath = "C:\\Users\\nick1\\llama.cpp\\models\\tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf";
         ModelParameters modelParams = new ModelParameters()
                 .setF16Kv(true)
                 .setEmbedding(true)
                 .setNGpuLayers(23);
+        String modelPath = GlobalConstants.path;
         model = new LlamaModel(modelPath, modelParams);
 
         writer = new BufferedWriter(new FileWriter("output.txt"));
