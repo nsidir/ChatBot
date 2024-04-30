@@ -22,7 +22,7 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // Set up chatbot model and writer
+        // Set up chatbot model params and writer
         ModelParameters modelParams = new ModelParameters()
                 .setF16Kv(true)
                 .setEmbedding(true)
